@@ -1,37 +1,22 @@
-import { NextAuthOptions } from 'next-auth';
-import GitHubProvider from 'next-auth/providers/github';
-import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
 
 export const options = {
-    providers: [
-        GitHubProvider({
-            clientId: process.env.GITHUB_ID,
-            clientSecret: process.env.GITHUB_SECRET
-        }),
-        CredentialsProvider({
-            name: "Credentials",
-            credentials: {
-                username: {
-                    label: "Username:",
-                    type: "text",
-                    placeholder: "your-username"
-                },
-                password: {
-                    label: "Password:",
-                    type: "password",
-                    placeholder: "your-password"
-                }
-            },
-            async authorize(credentials) {
-                const user = { id: "42", name: "Dave",  password: "nextauth"}
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
+  ],
+  callbacks: {
+    async signIn({ account, profile }) {
+      const allowedDomains = ['gmail.com'];
+      const email = profile?.email || '';
+      const domain = email.split('@')[1];
 
-                if(credentials?.username === user.name && credentials?.password === user.password){
-                    return user;
-                }else{
-                    return null;
-                }
-            }
-        })
-    ],
-
+      if (account?.provider === 'google' && allowedDomains.includes(domain)) {
+        return true;
+      }
+      return false;
+    },
+  },
 };
