@@ -1,9 +1,6 @@
 import GoogleProvider from 'next-auth/providers/google';
+import { getToken } from 'next-auth/jwt';
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-async function accountExists () {
-    console.log("accountexists fired");
-}
 
 export const options = {
     providers: [
@@ -20,15 +17,24 @@ export const options = {
             const email = profile?.email || '';
             const domain = email.split('@')[1];
             if (account?.provider === 'google' && domain === 'gmail.com') {
-
-                try{
-                    const res = await fetch(`${apiBaseUrl}/users`);
-                    console.log(res);
-                }catch(error){
-                    console.error('Failed to reach Express backend:', error);
+                if(profile?.email_verified == true){
+                    try{
+                        fetch(`${apiBaseUrl}/users`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                // 'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                email: profile.email,
+                            })
+                        });
+                    }catch(error){
+                        console.error('Failed to reach Express backend:', error);
+                        return false;
+                    }
+                    return true;
                 }
-
-                return true;
             }
             return false;
         },
