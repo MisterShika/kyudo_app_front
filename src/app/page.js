@@ -1,12 +1,10 @@
-
-import { useSession, signIn, signOut } from "next-auth/react"
+import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div>
-      <main>
-        Hello World
-      </main>
-    </div>
+    <main>
+      Hello World
+      <Link href="/dashboard">Go to Dashboard</Link>
+    </main>
   );
 }

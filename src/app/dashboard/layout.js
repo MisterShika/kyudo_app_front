@@ -1,10 +1,10 @@
 'use client';
 
-import "./globals.css";
+// import "./globals.css";
 import { SessionProvider } from "next-auth/react";
-import SyncUserAfterLogin from "../components/syncuserafterlogin";
+import SyncUserAfterLogin from '@/components/syncuserafterlogin';
 
-export default function RootLayout({ children }) {
+export default function DashboardLayout({ children }) {
   return (
     <html lang="en">
       <body>
