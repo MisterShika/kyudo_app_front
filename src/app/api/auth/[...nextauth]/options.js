@@ -40,11 +40,11 @@ export const options = {
   },
 
   async jwt({ token, user }) {
-    // During initial sign-in, user.backendUser will be available
     if (user?.backendUser) {
       token.id = user.backendUser.id;
       token.email = user.backendUser.email;
       token.role = user.backendUser.role;
+      token.currentSessionId = user.backendUser.currentSessionId;
     }
     return token;
   },
@@ -54,6 +54,7 @@ export const options = {
       session.user.id = token.id;
       session.user.email = token.email;
       session.user.role = token.role;
+      session.user.currentSessionId = token.currentSessionId;
     }
     return session;
   },
