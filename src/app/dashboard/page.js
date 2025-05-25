@@ -2,6 +2,8 @@
 
 import { useSession } from 'next-auth/react';
 
+import Link from 'next/link';
+
 export default function Profile() {
   const { data: session, status } = useSession();
 
@@ -47,9 +49,11 @@ export default function Profile() {
       <div>Role: {session.user.role}</div>
 
     {session.user.currentSessionId ? (
-      <div className="mt-2 inline-block px-2 py-1 bg-green-500 text-white text-sm rounded">
-        Session exists
-      </div>
+<Link href={`/session/${session.user.currentSessionId}`}>
+  <div className="mt-2 inline-block px-2 py-1 bg-green-500 text-white text-sm rounded cursor-pointer hover:bg-green-600 transition">
+    Session exists
+  </div>
+</Link>
     ) : (
       <button onClick={handleStartSession} className="mt-4 p-2 bg-blue-500 text-white rounded">
         Start Session
