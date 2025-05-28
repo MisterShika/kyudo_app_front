@@ -1,18 +1,19 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { use, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 
 
 export default function SingleSession ({ params }) {
-    const { sessionId } = use(params);
+    const { sessionId } = useParams();
     const [sessionData, setSessionData] = useState(null);
 
     useEffect(() => {
         fetch(`http://localhost:3000/sessions/getSession/${sessionId}`)
             .then(res => res.json())
             .then(setSessionData);
-    }, []);
+    }, [sessionId]);
 
     if(sessionData == null){
         return (
