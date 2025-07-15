@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import Loading from '@/components/Loading';
 
 export default function Profile() {
     const { data: session, status } = useSession();
@@ -32,9 +33,7 @@ export default function Profile() {
     };
 
     if (status === 'loading') return (
-        <div>
-            Loading...
-        </div>
+        <Loading />
     );
 
     if (!session) return (

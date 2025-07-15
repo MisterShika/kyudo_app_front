@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import Loading from '@/components/Loading';
 
 
 export default function SingleSession ({ params }) {
@@ -17,9 +18,7 @@ export default function SingleSession ({ params }) {
 
     if(sessionData == null){
         return (
-            <div>
-                Loading...
-            </div>
+            <Loading />
         );
     }else{
         return (
