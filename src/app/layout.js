@@ -9,11 +9,11 @@ import Footer from '../components/Footer';
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="min-h-screen flex flex-col">
+      <body className="flex flex-col h-screen">
         <SessionProvider>
           <SyncUserAfterLogin />
           <Header />
-          <main className="flex-grow">
+          <main className="flex-grow bg-gray-100 relative">
             {children}
           </main>
           <Footer />

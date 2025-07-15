@@ -1,6 +1,6 @@
 export default function Footer() {
     return (
-        <footer>
+        <footer className="h-16 bg-sky-200">
             Footer
         </footer>
     );
