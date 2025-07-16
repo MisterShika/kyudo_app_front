@@ -1,7 +1,7 @@
 // app/dashboard/layout.js
 export default function DashboardLayout({ children }) {
   return (
-    <section className="dashboard-layout">
+    <section className="dashboard">
       {children}
     </section>
   );

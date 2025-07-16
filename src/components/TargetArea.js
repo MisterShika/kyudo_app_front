@@ -8,12 +8,12 @@ export default function TargetArea() {
 
     return (
         <div className="target-box h-full">
-            <div className="top-target flex flex-col h-[52%] min-h-[264px]">
+            <div className="top-target flex flex-col h-auto sm:h-[52%] min-h-[264px]">
                 <div className="notice-area flex items-center justify-center h-8 bg-green-200">
                     Information
                 </div>
                 <div className="target-container flex-grow flex items-center justify-center">
-                    <div className="target-area aspect-[18/10] h-full bg-blue-300">
+                    <div className="target-area aspect-[9/5] w-full h-auto sm:w-auto sm:h-full bg-blue-300">
                         <div className="relative w-[28%] h-[50%]">
                             <Image
                             src="/images/kyudoTarget.png"
