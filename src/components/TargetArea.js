@@ -1,20 +1,78 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function TargetArea() {
-    const [target, setTarget] = useState([]);
+    const [dots, setDots] = useState([]);
     const targetRef = useRef(null);
 
-    const targetClick = (e) => {
-    const rect = targetRef.current.getBoundingClientRect();
+    //For sure a better way to set up the target boundaries but this was all I can think of for now.
+    const hitArea = {
+        xPercent: 49.9062683069713, // %
+        yPercent: 66.13592028259609, // %
+        radiusPercent: (69 / 533.44) * 100, // radius converted from your test size to %
+    };
 
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    const resizeCanvas = () => {
+        const canvas = targetRef.current;
+        if (!canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        drawDots();
+    };
 
-    console.log(`Clicked at X: ${x.toFixed(2)}%, Y: ${y.toFixed(2)}%`);
+    const drawDots = () => {
+        const canvas = targetRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        dots.forEach(({ xPercent, yPercent, color }) => {
+            const x = (xPercent / 100) * canvas.width;
+            const y = (yPercent / 100) * canvas.height;
+
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fill();
+        });
     }
+
+    useEffect(() => {
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+        return () => window.removeEventListener("resize", resizeCanvas);
+    }, []);
+
+    const targetClick = (e) => {
+        const rect = targetRef.current.getBoundingClientRect();
+
+        // Click position in %
+        const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
+        const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
+
+        // Circle center & radius in px
+        const cx = (hitArea.xPercent / 100) * rect.width;
+        const cy = (hitArea.yPercent / 100) * rect.height;
+        const r = (hitArea.radiusPercent / 100) * rect.width;
+
+        // Click in px
+        const clickX = (xPercent / 100) * rect.width;
+        const clickY = (yPercent / 100) * rect.height;
+
+        const dist = Math.sqrt((clickX - cx) ** 2 + (clickY - cy) ** 2);
+
+        const color = dist <= r ? "blue" : "red";
+
+        setDots((prev) => [...prev, { xPercent, yPercent, color }]);
+    }
+
+    useEffect(() => {
+        drawDots();
+    }, [dots]);
 
     return (
         <div className="target-box h-full">
@@ -23,7 +81,7 @@ export default function TargetArea() {
                     Information
                 </div>
                 <div className="target-container flex-grow flex items-center justify-center">
-                    <div ref={targetRef} onClick={targetClick} className="target-area relative flex items-end justify-center aspect-[9/5] w-full h-auto sm:w-auto sm:h-full bg-blue-300">
+                    <div className="target-area relative flex items-end justify-center aspect-[9/5] w-full h-auto sm:w-auto sm:h-full bg-blue-300">
                         <div className="relative w-[28%] h-[50%] mb-[5%]">
                             <Image
                             src="/images/kyudoTarget.png"
@@ -32,6 +90,9 @@ export default function TargetArea() {
                             className="object-contain"
                             />
                         </div>
+                        <canvas ref={targetRef} onClick={targetClick} className="targetCanvas absolute top-0 left-0 w-full h-full">
+
+                        </canvas>
                     </div>
                 </div>
                 <div className="confirmation-rect flex items-center justify-center h-8 bg-purple-200">
