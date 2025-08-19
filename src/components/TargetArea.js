@@ -2,9 +2,11 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import { KyudoButton } from "@/components/ui/KyudoButton";
 
 export default function TargetArea() {
     const [dots, setDots] = useState([]);
+    const [currentDot, setCurrentDot] = useState();
     const targetRef = useRef(null);
 
     //For sure a better way to set up the target boundaries but this was all I can think of for now.
@@ -23,12 +25,40 @@ export default function TargetArea() {
         drawDots();
     };
 
+    const confirmShot = () => {
+        console.log(currentDot);
+        const shot = currentDot;
+        setDots((prev) => [...prev, shot]);
+        setCurrentDot();
+    }
+
+    const clearShot = () => {
+        setCurrentDot();
+    }
+
+    const listShots = () => {
+
+    }
+
+
     const drawDots = () => {
         const canvas = targetRef.current;
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (currentDot) {
+            const { xPercent, yPercent, color } = currentDot;
+
+            const x = (xPercent / 100) * canvas.width;
+            const y = (yPercent / 100) * canvas.height;
+
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
 
         dots.forEach(({ xPercent, yPercent, color }) => {
             const x = (xPercent / 100) * canvas.width;
@@ -67,12 +97,15 @@ export default function TargetArea() {
 
         const color = dist <= r ? "blue" : "red";
 
-        setDots((prev) => [...prev, { xPercent, yPercent, color }]);
+        // setDots((prev) => [...prev, { xPercent, yPercent, color }]);
+        setCurrentDot({ xPercent, yPercent, color });
     }
+
+
 
     useEffect(() => {
         drawDots();
-    }, [dots]);
+    }, [dots, currentDot]);
 
     return (
         <div className="target-box h-full">
@@ -96,7 +129,18 @@ export default function TargetArea() {
                     </div>
                 </div>
                 <div className="confirmation-rect flex items-center justify-center h-8 bg-purple-200">
-                    Confirmation Rectangle
+                    {currentDot ? (
+                        <div>
+                            <KyudoButton onClick={confirmShot}>
+                                Confirm
+                            </KyudoButton>
+                            <KyudoButton onClick={clearShot}>
+                                Clear
+                            </KyudoButton>
+                        </div>
+                    ) : (
+                        <div><button>Finish session</button></div>
+                    )}
                 </div>
             </div>
             <div className="bottom-target h-[48%]">
