@@ -25,21 +25,16 @@ export default function TargetArea() {
         drawDots();
     };
 
-    const confirmShot = () => {
+    const confirmCurrent = () => {
         console.log(currentDot);
         const shot = currentDot;
         setDots((prev) => [...prev, shot]);
         setCurrentDot();
     }
 
-    const clearShot = () => {
+    const clearCurrent = () => {
         setCurrentDot();
     }
-
-    const listShots = () => {
-
-    }
-
 
     const drawDots = () => {
         const canvas = targetRef.current;
@@ -49,10 +44,12 @@ export default function TargetArea() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         if (currentDot) {
-            const { xPercent, yPercent, color } = currentDot;
+            const { xPercent, yPercent, hit } = currentDot;
 
             const x = (xPercent / 100) * canvas.width;
             const y = (yPercent / 100) * canvas.height;
+            // const color = hit == true ? 'blue' : 'red';
+            const color = 'gold';
 
             ctx.fillStyle = color;
             ctx.beginPath();
@@ -60,9 +57,10 @@ export default function TargetArea() {
             ctx.fill();
         }
 
-        dots.forEach(({ xPercent, yPercent, color }) => {
+        dots.forEach(({ xPercent, yPercent, hit }) => {
             const x = (xPercent / 100) * canvas.width;
             const y = (yPercent / 100) * canvas.height;
+            const color = hit == true ? 'blue' : 'red';
 
             ctx.fillStyle = color;
             ctx.beginPath();
@@ -95,10 +93,10 @@ export default function TargetArea() {
 
         const dist = Math.sqrt((clickX - cx) ** 2 + (clickY - cy) ** 2);
 
-        const color = dist <= r ? "blue" : "red";
+        const hit = dist <= r ? true : false;
 
-        // setDots((prev) => [...prev, { xPercent, yPercent, color }]);
-        setCurrentDot({ xPercent, yPercent, color });
+        // setDots((prev) => [...prev, { xPercent, yPercent, hit }]);
+        setCurrentDot({ xPercent, yPercent, hit });
     }
 
 
@@ -131,10 +129,10 @@ export default function TargetArea() {
                 <div className="confirmation-rect flex items-center justify-center h-8 bg-purple-200">
                     {currentDot ? (
                         <div>
-                            <KyudoButton onClick={confirmShot}>
+                            <KyudoButton onClick={confirmCurrent}>
                                 Confirm
                             </KyudoButton>
-                            <KyudoButton onClick={clearShot}>
+                            <KyudoButton onClick={clearCurrent}>
                                 Clear
                             </KyudoButton>
                         </div>
@@ -144,7 +142,18 @@ export default function TargetArea() {
                 </div>
             </div>
             <div className="bottom-target h-[48%]">
-                <div className="shot-list">Shot List</div>
+                <div className="shot-list">
+                    <ul>
+                        {dots
+                            .slice() // create a copy so the original array is not mutated
+                            .reverse()
+                            .map((dot, index) => (
+                                <li key={index}>
+                                    X: {dot.xPercent}%, Y: {dot.yPercent}%, Hit: {dot.hit ? "Yes" : "No"}
+                                </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
         </div>
     );
