@@ -3,8 +3,11 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { KyudoButton } from "@/components/ui/KyudoButton";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircle } from '@fortawesome/free-regular-svg-icons';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 
-export default function TargetArea() {
+export default function TargetArea({ userId, sessionId }) {
     const [dots, setDots] = useState([]);
     const [currentDot, setCurrentDot] = useState();
     const targetRef = useRef(null);
@@ -25,15 +28,45 @@ export default function TargetArea() {
         drawDots();
     };
 
-    const confirmCurrent = () => {
-        console.log(currentDot);
-        const shot = currentDot;
-        setDots((prev) => [...prev, shot]);
+    const clearCurrent = () => {
         setCurrentDot();
     }
 
-    const clearCurrent = () => {
-        setCurrentDot();
+    const confirmCurrent = async () => {
+        const shot = currentDot;
+        setDots((prev) => [...prev, shot]);
+
+        try {
+            const response = await fetch('http://localhost:3000/shots/addshot', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                sessionId: sessionId,
+                userId: userId,
+                x: currentDot.xPercent,
+                y: currentDot.yPercent,
+                hit: currentDot.hit,
+                kinteki: false
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to add shot');
+        }
+
+       
+
+        } catch (error) {
+            console.error('Error starting session:', error);
+        }
+
+        clearCurrent();
+    }
+
+    const deleteArrowFromList = (id) => {
+        console.log(`Deleted ID is : ${id}`);
     }
 
     const drawDots = () => {
@@ -141,15 +174,28 @@ export default function TargetArea() {
                     )}
                 </div>
             </div>
-            <div className="bottom-target h-[48%]">
+            <div className="bottom-target h-[48%] overflow-y-auto">
                 <div className="shot-list">
                     <ul>
                         {dots
-                            .slice() // create a copy so the original array is not mutated
+                            .slice()
                             .reverse()
                             .map((dot, index) => (
                                 <li key={index}>
-                                    X: {dot.xPercent}%, Y: {dot.yPercent}%, Hit: {dot.hit ? "Yes" : "No"}
+                                    <div>{index}</div>
+                                    <div>
+                                        {dot.hit ? (
+                                            <FontAwesomeIcon icon={faCircle} className="text-blue-500 w-5 h-5" />
+                                        ) : (
+                                            <FontAwesomeIcon icon={faTimes} className="text-red-500 w-5 h-5" />
+                                        )}
+                                    </div>
+                                    <div>Tags</div>
+                                    <div>
+                                        <KyudoButton onClick={() => deleteArrowFromList(index)}>
+                                            Delete
+                                        </KyudoButton>
+                                    </div>
                                 </li>
                         ))}
                     </ul>
