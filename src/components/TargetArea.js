@@ -34,45 +34,64 @@ export default function TargetArea({ userId, sessionId }) {
 
     const confirmCurrent = async () => {
         const shot = currentDot;
-        setDots((prev) => [...prev, shot]);
 
+        //Add shot to database
         try {
             const response = await fetch('http://localhost:3000/shots/addshot', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                sessionId: sessionId,
-                userId: userId,
-                x: currentDot.xPercent,
-                y: currentDot.yPercent,
-                hit: currentDot.hit,
-                kinteki: false
-            }),
-        });
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sessionId: sessionId,
+                    userId: userId,
+                    x: shot.xPercent,
+                    y: shot.yPercent,
+                    hit: shot.hit,
+                    kinteki: false
+                }),
+            });
 
-        if (!response.ok) {
-            throw new Error('Failed to add shot');
-        }
+            if (!response.ok) {
+                throw new Error('Failed to add shot');
+            }
 
         } catch (error) {
-            console.error('Error starting session:', error);
+            console.error('Error adding shot:', error);
         }
 
         clearCurrent();
+
+        // Clear current shot and then retrieve most
+        // recent shot (the one added in this function)
+        // and add it to the displayed shots
+        // so you're not puling every single shot on submission
+        try {
+            const addedShot = await getRecentShot(sessionId);
+            setDots((prev) => [...prev, addedShot.shot]);
+        } catch (error) {
+            console.error('Error retrieving most recent shot:', error);
+        }
     }
 
     const deleteArrowFromList = (arrowId) => {
         console.log(`Deleted ID is : ${arrowId}`);
     }
 
-    const getDots = async (sessionId) => {
-        const theDots = await fetch(`http://localhost:3000/shots/getShotsFromSession/${sessionId}`)
-        if (!theDots.ok) {
-            throw new Error(`Failed to fetch shots: ${theDots.status}`);
+    const getShots = async (sessionId) => {
+        const shots = await fetch(`http://localhost:3000/shots/getShotsFromSession/${sessionId}`);
+        if (!shots.ok) {
+            throw new Error(`Failed to fetch shots: ${shots.status}`);
         }
-        return theDots.json();
+        return shots.json();
+    }
+
+    const getRecentShot = async (sessionId) => {
+        const shot = await fetch(`http://localhost:3000/shots/getMostRecentShot/${sessionId}`);
+        if (!shot.ok) {
+            throw new Error(`Failed to fetch shot: ${shot.status}`);
+        }
+        return shot.json();
     }
 
     const drawDots = () => {
@@ -96,14 +115,16 @@ export default function TargetArea({ userId, sessionId }) {
             ctx.fill();
         }
 
-        dots.forEach(({ xPercent, yPercent, hit }) => {
-            const x = (xPercent / 100) * canvas.width;
-            const y = (yPercent / 100) * canvas.height;
+        dots.forEach(({ x, y, hit }) => {
+            
+            console.log(`x: ${x}, y: ${y}, hit: ${hit}`);
+            const xPercent = (x / 100) * canvas.width;
+            const yPercent = (y / 100) * canvas.height;
             const color = hit == true ? 'blue' : 'red';
 
             ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.arc(xPercent, yPercent, 4, 0, Math.PI * 2);
             ctx.fill();
         });
     }
@@ -143,8 +164,8 @@ export default function TargetArea({ userId, sessionId }) {
 
         const fetchDots = async () => {
             try {
-                const dotsFromDb = await getDots(sessionId);
-                setDots(dotsFromDb.shots);
+                const shotsFromDb = await getShots(sessionId);
+                setDots(shotsFromDb.shots);
             } catch (err) {
                 console.error("Failed to fetch dots:", err);
             }
@@ -153,6 +174,7 @@ export default function TargetArea({ userId, sessionId }) {
     }, [sessionId]);
 
     useEffect(() => {
+        console.log('Draw Dots Fired');
         drawDots();
     }, [dots, currentDot]);
 
