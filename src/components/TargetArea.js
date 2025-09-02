@@ -56,8 +56,6 @@ export default function TargetArea({ userId, sessionId }) {
             throw new Error('Failed to add shot');
         }
 
-       
-
         } catch (error) {
             console.error('Error starting session:', error);
         }
@@ -65,8 +63,16 @@ export default function TargetArea({ userId, sessionId }) {
         clearCurrent();
     }
 
-    const deleteArrowFromList = (id) => {
-        console.log(`Deleted ID is : ${id}`);
+    const deleteArrowFromList = (arrowId) => {
+        console.log(`Deleted ID is : ${arrowId}`);
+    }
+
+    const getDots = async (sessionId) => {
+        const theDots = await fetch(`http://localhost:3000/shots/getShotsFromSession/${sessionId}`)
+        if (!theDots.ok) {
+            throw new Error(`Failed to fetch shots: ${theDots.status}`);
+        }
+        return theDots.json();
     }
 
     const drawDots = () => {
@@ -128,15 +134,28 @@ export default function TargetArea({ userId, sessionId }) {
 
         const hit = dist <= r ? true : false;
 
-        // setDots((prev) => [...prev, { xPercent, yPercent, hit }]);
         setCurrentDot({ xPercent, yPercent, hit });
     }
 
 
+    useEffect(() => {
+        if (!sessionId) return;
+
+        const fetchDots = async () => {
+            try {
+                const dotsFromDb = await getDots(sessionId);
+                setDots(dotsFromDb.shots);
+            } catch (err) {
+                console.error("Failed to fetch dots:", err);
+            }
+        };
+        fetchDots();
+    }, [sessionId]);
 
     useEffect(() => {
         drawDots();
     }, [dots, currentDot]);
+
 
     return (
         <div className="target-box h-full">
